@@ -1,37 +1,58 @@
+#include <stdio.h>
+
+#include "include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
-int main(void)
+#define WIDTH 800
+#define HEIGHT 600
+
+int init() {
+	int init = glfwInit();
+	if (init) {
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);	
+	}
+	return init;
+}
+
+void viewport_resize_callback(GLFWwindow* window, int width, int height)
 {
-    GLFWwindow* window;
+	glViewport(0, 0, width, height);
+}
 
-    /* Initialize the library */
-    if (!glfwInit())
-        return -1;
+void error(const char *errorstr) {
+	printf("%s\n", errorstr);
+	glfwTerminate();
+}
 
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
-    }
+int main (int argc, char *argv[])
+{
+	if (!init()) {
+		return 1;
+	}
 
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
+	if (window == NULL) {
+		error("Error while creating window");
+		return 1;
+	}
 
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
-    {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+	glfwMakeContextCurrent(window);
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+	{
+		error("Error while loading GLAD procs");
+		return 1;
+	}
 
-        /* Poll for and process events */
-        glfwPollEvents();
-    }
+	glViewport(0, 0, WIDTH, HEIGHT);
+	glfwSetFramebufferSizeCallback(window, viewport_resize_callback);
+	
+	while (!glfwWindowShouldClose(window)) {
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
 
-    glfwTerminate();
-    return 0;
+	glfwTerminate();
+	return 0;
 }
