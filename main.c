@@ -1,37 +1,70 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "include/glad/glad.h"
 #include <GLFW/glfw3.h>
 
-int main(void)
-{
-    GLFWwindow* window;
+size_t WIDTH, HEIGHT;
 
-    /* Initialize the library */
-    if (!glfwInit())
-        return -1;
+int init() {
+	int init = glfwInit();
+	if (init) {
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);	
+	}
+	return init;
+}
 
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
-    }
+void error(const char *errorstr) {
+	printf("%s\n", errorstr);
+	glfwTerminate();
+}
 
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
+void viewport_resize_callback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+}
 
-    /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
-    {
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+GLFWwindow *load_window_context(char *name, int width, int height) {
+	GLFWwindow* window = glfwCreateWindow(width, height, name, NULL, NULL);
+	if (window == NULL) {
+		error("Error while creating window");
+		return NULL;
+	}
 
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+	glfwMakeContextCurrent(window);
 
-        /* Poll for and process events */
-        glfwPollEvents();
-    }
+	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+		error("Error while loading GLAD procs");
+		return NULL;
+	}
 
-    glfwTerminate();
-    return 0;
+	glViewport(0, 0, width, height);
+	glfwSetFramebufferSizeCallback(window, viewport_resize_callback);
+	return window;	
+}
+
+void setWindowDimensions(char *width, char *height) {
+	WIDTH = atoi(width);
+	HEIGHT = atoi(height);
+}
+
+int main (int argc, char *argv[]) {
+	if (!init()) {
+		return 1;
+	}
+	
+	setWindowDimensions(argv[1], argv[2]);
+
+	GLFWwindow *window = load_window_context("Hello World", WIDTH, HEIGHT);
+	if (window == NULL) {
+		return 1;
+	}
+	
+	while (!glfwWindowShouldClose(window)) {
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
+	return 0;
 }
